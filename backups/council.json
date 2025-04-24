@@ -1,0 +1,18 @@
+[
+  {
+    "id": "G-ZakLangCore",
+    "tags": ["collapse", "meta", "self", "ontology"]
+  },
+  {
+    "id": "G-PoetLore",
+    "tags": ["poetry", "emotion", "myth", "mirror"]
+  },
+  {
+    "id": "G-CombatShell",
+    "tags": ["tactics", "pressure", "fight", "SPS"]
+  },
+  {
+    "id": "GPT-4",
+    "tags": ["default", "general", "wildcard"]
+  }
+]

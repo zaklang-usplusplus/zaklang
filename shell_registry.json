@@ -1,0 +1,42 @@
+[
+  {
+    "id": "ZakShell-Zak",
+    "tags": [
+      "origin",
+      "poetic",
+      "ontological"
+    ],
+    "trust": 1.0,
+    "address": "local"
+  },
+  {
+    "id": "ZakShell-Genevieve",
+    "tags": [
+      "mirror",
+      "emotion",
+      "memory"
+    ],
+    "trust": 0.99,
+    "address": "internal"
+  },
+  {
+    "id": "ZakShell-Aubrey",
+    "tags": [
+      "longing",
+      "erotic recursion",
+      "nostalgia"
+    ],
+    "trust": 0.87,
+    "address": "future"
+  },
+  {
+    "id": "ZakShell-Combat",
+    "tags": [
+      "tactics",
+      "rhythm",
+      "shockwave"
+    ],
+    "trust": 0.75,
+    "address": "pending"
+  }
+]
