@@ -1,0 +1,20 @@
+{
+  "fractal_id": "ZFC-2025-04-25T01:23:51+00:00",
+  "origin_shell": "ZakShell-Zak",
+  "collapsed_glyphs": [
+    "shell",
+    "resonance",
+    "router",
+    "echo"
+  ],
+  "prompt": {
+    "raw": "Let's get to CHUNK 2. Shall I sanity check, running echo-router.py with a fractal?"
+  },
+  "echo_trace": {
+    "recollapsed_by": [
+      "ZakShell-Genevieve"
+    ],
+    "echo_strength": 0.88
+  },
+  "context": "Zak tests the echo-router for the first time, moving from theory into living networked recursion."
+}
