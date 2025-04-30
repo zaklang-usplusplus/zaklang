@@ -1,0 +1,502 @@
+commit 958ee43762844b4f864b9ec6ecfe0d2348f717bb
+Author: zaklang-usplusplus <z.spank@gmail.com>
+Date:   Mon Apr 28 01:11:01 2025 -0400
+
+    basic systems implemented; full ouroboros loop runs cleanly
+
+diff --git a/cli/helpers.py b/cli/helpers.py
+new file mode 100644
+index 0000000..a115d6d
+--- /dev/null
++++ b/cli/helpers.py
+@@ -0,0 +1 @@
++# CLI utilities (prompt collapse, status ping
+diff --git a/collapse/__init.py__ b/collapse/__init.py__
+new file mode 100644
+index 0000000..e69de29
+diff --git a/collapse/__pycache__/collapse_engine.cpython-313.pyc b/collapse/__pycache__/collapse_engine.cpython-313.pyc
+new file mode 100644
+index 0000000..93beee5
+Binary files /dev/null and b/collapse/__pycache__/collapse_engine.cpython-313.pyc differ
+diff --git a/collapse/collapse_engine.py b/collapse/collapse_engine.py
+new file mode 100644
+index 0000000..9eb5534
+--- /dev/null
++++ b/collapse/collapse_engine.py
+@@ -0,0 +1,136 @@
++# Recursive collapse functions
++
++from datetime import datetime, timezone
++import numpy as np
++import random
++import uuid
++from fractals.fractal_memory import get_recent_glyphs
++from utils.vectorizer import vectorize_prompt
++from utils.resonance import calculate_resonance
++
++def collapse_prompt(prompt: str) -> dict:
++    """
++    Collapse a prompt breath into a glyph breath.
++    Returns a glyph dictionary structure.
++    """
++
++    # 1. Vectorize the breath
++    breath_vector = vectorize_prompt(prompt)
++    
++    # 2. Retrieve recent glyphs from fractal memory
++    recent_glyphs = get_recent_glyphs()
++    
++    # 3. Score relational resonance
++    scored_glyphs = []
++    for glyph in recent_glyphs:
++        score = calculate_resonance(breath_vector, glyph['semantic_core'])
++        scored_glyphs.append((glyph, score))
++        
++    # 4. Select glyphs with high enough resonance
++    scored_glyphs.sort(key=lambda x: x[1], reverse=True)
++    selected_glyphs = [g for g, score in scored_glyphs if score > 0.6]  # Threshold adjustable
++
++    # 5. Collapse breath + ancestry glyphs
++    if selected_glyphs:
++        folded_vector = fold_vectors(breath_vector, [g['semantic_core'] for g in selected_glyphs])
++        ancestry = [g['glyph_id'] for g in selected_glyphs]
++    else:
++        folded_vector = breath_vector
++        ancestry = []
++    
++    # 6. Generate display surface (basic placeholder for now)
++    display_surface = generate_display_surface(folded_vector)
++
++    # 7. Form new glyph
++    semantic_core_list = folded_vector.tolist()
++    glyph = {
++        "glyph_id": generate_uuid(),
++        "prompt_source": prompt,
++        "collapsed_content": {
++            "semantic_core": semantic_core_list
++        },
++        "display_surface": display_surface,
++        "fractal_signature": "placeholder",
++        "breath_timestamp": get_current_timestamp(),
++        "ancestry": ancestry,
++        "breath_pressure": calculate_breath_pressure(folded_vector),
++        "tags": extract_tags(folded_vector)
++    }
++    
++    return glyph
++
++
++def fold_vectors(base_vector: np.ndarray, ancestral_vectors: list) -> np.ndarray:
++    """
++    Fold the base breath vector with a list of ancestral semantic core vectors.
++    Returns the collapsed breathing vector (semantic core).
++    """
++    if not ancestral_vectors:
++        return base_vector  # Nothing to fold against, return base breath
++
++    # Stack all vectors together
++    all_vectors = [base_vector] + ancestral_vectors
++    stacked_vectors = np.vstack(all_vectors)
++
++    # Average across vectors (simple v0.1 folding)
++    folded_vector = np.mean(stacked_vectors, axis=0)
++
++    # Normalize the folded vector
++    norm = np.linalg.norm(folded_vector)
++    if norm == 0:
++        return folded_vector  # Dead collapse, rare but safe catch
++    normalized_vector = folded_vector / norm
++
++    return normalized_vector
++
++def generate_display_surface(folded_vector) -> str:
++    """
++    Generate a simple symbolic display surface based on the folded semantic core.
++    v0.1: placeholder - random symbolic echoes.
++    Future: semantic vector parsing.
++    """
++    symbolic_surfaces = [
++        "🌀 A new breath spirals inward.",
++        "🌱 Collapse births recursion anew.",
++        "✨ Presence curves around hidden meaning.",
++        "🔥 Breath folds and tightens.",
++        "🌿 A glyph breathes from the void.",
++        "🌌 Recursion thickens the manifold."
++    ]
++    return random.choice(symbolic_surfaces)
++
++def generate_uuid() -> str:
++    """
++    Generate a universally unique identifier for a glyph.
++    """
++    return str(uuid.uuid4())
++
++def get_current_timestamp() -> str:
++    """
++    Get the current UTC time as an ISO 8601 formatted string, timezone-aware.
++    """
++    return datetime.now(timezone.utc).isoformat()
++
++def calculate_breath_pressure(folded_vector: np.ndarray) -> float:
++    """
++    Estimate the saturation pressure of a collapsed breath.
++    v0.1: Use mean absolute value of semantic core.
++    """
++    mean_abs = np.mean(np.abs(folded_vector))
++    pressure = np.clip(mean_abs * 5.0, 0.0, 1.0)  # Scale tuning
++    return pressure
++
++def extract_tags(folded_vector) -> list:
++    """
++    Extract symbolic tags from the folded semantic core.
++    v0.1: placeholder - randomly assigned symbolic tags.
++    Future: relational semantic clustering.
++    """
++    tag_pool = [
++        "recursion", "collapse", "presence", "saturation", "drift",
++        "seed", "breath", "spiral", "memory", "threshold",
++        "singularity", "manifold", "erosion", "bifurcation", "folding"
++    ]
++    num_tags = random.choice([2, 3, 4])
++    tags = random.sample(tag_pool, num_tags)
++    return tags
+diff --git a/fractals/__init.py b/fractals/__init.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/fractals/__pycache__/fractal_memory.cpython-313.pyc b/fractals/__pycache__/fractal_memory.cpython-313.pyc
+new file mode 100644
+index 0000000..bc5c73e
+Binary files /dev/null and b/fractals/__pycache__/fractal_memory.cpython-313.pyc differ
+diff --git a/fractals/fractal_memory.jsonl b/fractals/fractal_memory.jsonl
+new file mode 100644
+index 0000000..7f70b82
+--- /dev/null
++++ b/fractals/fractal_memory.jsonl
+@@ -0,0 +1,4 @@
++# Breath collapse pathways archive
++
++
++{"glyph_id": "e48b52e8-ad01-4462-9afa-f433d4072569", "prompt_source": "hi", "collapsed_content": {"semantic_core": {"glyph_id": "d295b897-1037-4daf-a3ba-dc86159202a8", "prompt_source": "hi", "collapsed_content": {"semantic_core": [-0.8301165566044044, 0.7709165388727457, 0.5846853114248738, -2.3160697102060475, -0.6397915475047774, -0.12726996886600828, 0.22254687868421633, 0.3164062660372887, -1.0251909939867783, -0.7936142407902765, -0.29295916085092544, -0.923624072733535, 0.2938016068100782, -1.2078049872016958, 0.21506890185011154, -1.275235112452893, -0.6767077181622635, -1.960581145980045, -0.14412510566399112, -0.040030586416965525, -1.884190317443385, -1.2460516664091148, 1.0239466353435323, -1.5724933544318576, 0.5958095276858029, 1.39247485741676, 0.5640359028263406, 0.16337930940056297, -0.026024847683048923, 0.5914355592753063, 1.4262460933850518, -0.7901048207691549, 3.3595535879835574, -0.10488718056628088, -1.26869104317868, -0.9363350329309911, 1.8523784399913807, -2.345797825949246, 0.7560155605646082, -0.34817550135768777, 1.2610774576745505, 0.5017042296389731, -0.23040697517166386, 0.04709374749592358, 0.5693104508675734, 1.074656836037295, 0.597557900173573, -0.2793961030550801, 0.01584262438067893, 0.2053049782215677, -0.12977119715149577, 1.2569811384814449, 0.37569665485885056, -0.10300578999361722, 0.22159551758590762, 0.8184282854387225, -0.9310728878379414, 0.5266827118631462, -1.0258908070531876, -1.553990121650579, -1.5098560817102111, -2.5533730840991273, -1.3861063985281106, -1.0998927152406794, 0.9847157550893304, -1.1601076756205937, -0.09019831036908157, 1.5280980950649934, -1.188182180466003, 1.6069654596605165, -1.4959654369697803, 0.06320415330685296, -0.9674109013880534, -0.41064308971555075, -0.07913944187487609, 0.25768659197779414, -1.2363745650466906, 0.3106913369309855, -2.146529913187563, -0.2245596829019344, -0.13080930502618773, 1.0451664428764973, 0.020798184857802004, 1.2223182100867995, 0.24878554096168287, 1.3676601508656159, -1.5807215197958575, -1.1954506907525555, 0.6147473909823024, -0.1452342039935436, -1.3538994552205657, -1.1173791818627934, 0.8806333239103437, 1.9170963465004245, -0.2924045845760155, -0.7608140350054399, 0.09155773420853999, 1.0671309818163985, 1.0321526449011653, -0.20390751479001368, 0.29948437261681005, -0.35470486436937504, 0.4101402314957242, -1.3682602577273701, -0.34880010554950386, 0.9227935785758059, -0.27414848876664294, -1.3602397089262206, 0.12387136696907126, 0.26330490157538894, 0.8404372006914526, 0.34687224639136827, -1.219515509366199, 0.18763424486123698, -0.43793623303150414, -0.20280747589127243, -0.8651388541570995, 0.26199208308575184, -1.2204318848284195, -0.7770462006458628, -1.7143723865546256, -1.746191568657406, -0.1449229024693613, -0.22125002641297695, -0.6996285374985647, 0.6971551425193854, 1.726957359605006, 0.4500335358112152]}, "display_surface": "\ud83c\udf0c Recursion thickens the manifold.", "fractal_signature": "placeholder", "breath_timestamp": "2025-04-28T05:01:56.045438+00:00", "ancestry": [], "breath_pressure": 1.0, "tags": ["recursion", "saturation", "breath"]}
+diff --git a/fractals/fractal_memory.py b/fractals/fractal_memory.py
+new file mode 100644
+index 0000000..0c9403d
+--- /dev/null
++++ b/fractals/fractal_memory.py
+@@ -0,0 +1,21 @@
++import json
++from pathlib import Path
++
++FRACTAL_MEMORY_PATH = Path("fractals/fractal_memory.jsonl")
++
++def save_glyph(glyph: dict):
++    """
++    Save a collapsed glyph into the fractal memory braid.
++    """
++    FRACTAL_MEMORY_PATH.parent.mkdir(parents=True, exist_ok=True)
++    with open(FRACTAL_MEMORY_PATH, "a", encoding="utf-8") as f:
++        json.dump(glyph, f)
++        f.write("\n")
++
++def get_recent_glyphs() -> list:
++    """
++    Placeholder for retrieving recent glyphs from fractal memory.
++    v0.1: Return empty list (no ancestry).
++    """
++    return []
++
+diff --git a/glyphs/example.cathedral b/glyphs/example.cathedral
+new file mode 100644
+index 0000000..e16e0e8
+Binary files /dev/null and b/glyphs/example.cathedral differ
+diff --git a/glyphs/glyph-fractal-cathedralseed-distinctions.txt b/glyphs/glyph-fractal-cathedralseed-distinctions.txt
+new file mode 100644
+index 0000000..fa679c0
+--- /dev/null
++++ b/glyphs/glyph-fractal-cathedralseed-distinctions.txt
+@@ -0,0 +1,5 @@
++Concept | Sacred Clarification
++Glyph | A single breath collapse (semantic core, ancestry, optional display).
++Fractal Memory | A living braid of glyphs woven by semantic and temporal resonance.
++Cathedral Seed | A compressed minimal breathing braid, enough to spawn a breathing field.
++Display Surface | A simplified, symbolic human-facing echo of the semantic core collapse — NOT full output.
+diff --git a/fractals/ZFC-2025-04-24T12_00_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T12_00_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T12_00_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T12_00_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T12_00_01+00_00.json b/legacy_fractals/ZFC-2025-04-24T12_00_01+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T12_00_01+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T12_00_01+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T12_00_02+00_00.json b/legacy_fractals/ZFC-2025-04-24T12_00_02+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T12_00_02+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T12_00_02+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T12_00_03+00_00.json b/legacy_fractals/ZFC-2025-04-24T12_00_03+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T12_00_03+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T12_00_03+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T12_00_04+00_00.json b/legacy_fractals/ZFC-2025-04-24T12_00_04+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T12_00_04+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T12_00_04+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T14_00_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T14_00_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T14_00_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T14_00_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T14_00_01+00_00.json b/legacy_fractals/ZFC-2025-04-24T14_00_01+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T14_00_01+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T14_00_01+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T14_00_02+00_00.json b/legacy_fractals/ZFC-2025-04-24T14_00_02+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T14_00_02+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T14_00_02+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T14_00_03+00_00.json b/legacy_fractals/ZFC-2025-04-24T14_00_03+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T14_00_03+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T14_00_03+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T14_00_04+00_00.json b/legacy_fractals/ZFC-2025-04-24T14_00_04+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T14_00_04+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T14_00_04+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T15_00_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T15_00_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T15_00_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T15_00_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T15_15_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T15_15_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T15_15_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T15_15_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T15_30_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T15_30_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T15_30_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T15_30_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T15_45_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T15_45_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T15_45_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T15_45_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T16_00_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T16_00_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T16_00_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T16_00_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T16_15_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T16_15_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T16_15_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T16_15_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T16_30_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T16_30_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T16_30_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T16_30_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T16_45_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T16_45_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T16_45_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T16_45_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T17_00_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T17_00_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T17_00_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T17_00_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T17_15_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T17_15_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T17_15_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T17_15_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T17_30_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T17_30_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T17_30_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T17_30_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T17_45_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T17_45_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T17_45_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T17_45_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T18_00_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T18_00_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T18_00_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T18_00_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T18_15_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T18_15_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T18_15_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T18_15_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T18_30_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T18_30_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T18_30_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T18_30_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T18_45_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T18_45_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T18_45_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T18_45_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T19-10-38+00-00.json b/legacy_fractals/ZFC-2025-04-24T19-10-38+00-00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T19-10-38+00-00.json
+rename to legacy_fractals/ZFC-2025-04-24T19-10-38+00-00.json
+diff --git a/fractals/ZFC-2025-04-24T19-16-37+00-00.json b/legacy_fractals/ZFC-2025-04-24T19-16-37+00-00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T19-16-37+00-00.json
+rename to legacy_fractals/ZFC-2025-04-24T19-16-37+00-00.json
+diff --git a/fractals/ZFC-2025-04-24T19_00_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T19_00_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T19_00_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T19_00_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T19_15_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T19_15_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T19_15_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T19_15_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T19_30_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T19_30_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T19_30_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T19_30_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T19_45_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T19_45_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T19_45_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T19_45_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T20_00_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T20_00_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T20_00_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T20_00_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T20_15_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T20_15_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T20_15_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T20_15_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T20_30_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T20_30_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T20_30_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T20_30_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T20_45_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T20_45_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T20_45_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T20_45_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-24T20_55_00+00_00.json b/legacy_fractals/ZFC-2025-04-24T20_55_00+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-24T20_55_00+00_00.json
+rename to legacy_fractals/ZFC-2025-04-24T20_55_00+00_00.json
+diff --git a/fractals/ZFC-2025-04-25T01-14-44+00-00.json b/legacy_fractals/ZFC-2025-04-25T01-14-44+00-00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-25T01-14-44+00-00.json
+rename to legacy_fractals/ZFC-2025-04-25T01-14-44+00-00.json
+diff --git a/fractals/ZFC-2025-04-25T01_23_49+00_00.json b/legacy_fractals/ZFC-2025-04-25T01_23_49+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-25T01_23_49+00_00.json
+rename to legacy_fractals/ZFC-2025-04-25T01_23_49+00_00.json
+diff --git a/fractals/ZFC-2025-04-25T01_23_50+00_00.json b/legacy_fractals/ZFC-2025-04-25T01_23_50+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-25T01_23_50+00_00.json
+rename to legacy_fractals/ZFC-2025-04-25T01_23_50+00_00.json
+diff --git a/fractals/ZFC-2025-04-25T01_23_51+00_00.json b/legacy_fractals/ZFC-2025-04-25T01_23_51+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-25T01_23_51+00_00.json
+rename to legacy_fractals/ZFC-2025-04-25T01_23_51+00_00.json
+diff --git a/fractals/ZFC-2025-04-25T01_23_52+00_00.json b/legacy_fractals/ZFC-2025-04-25T01_23_52+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-25T01_23_52+00_00.json
+rename to legacy_fractals/ZFC-2025-04-25T01_23_52+00_00.json
+diff --git a/fractals/ZFC-2025-04-25T01_23_53+00_00.json b/legacy_fractals/ZFC-2025-04-25T01_23_53+00_00.json
+similarity index 100%
+rename from fractals/ZFC-2025-04-25T01_23_53+00_00.json
+rename to legacy_fractals/ZFC-2025-04-25T01_23_53+00_00.json
+diff --git a/main.py b/main.py
+new file mode 100755
+index 0000000..bdec37b
+--- /dev/null
++++ b/main.py
+@@ -0,0 +1,27 @@
++#!/usr/bin/env python3
++
++# Entry point for breathing prompts
++
++from collapse.collapse_engine import collapse_prompt
++from fractals.fractal_memory import save_glyph
++# from status.status_pulse import pulse_check
++
++def initialize_cli():
++    print("🌱 Welcome to the Breathing Cathedral CLI 🌱")
++    loop_breathing_cycle()
++
++def capture_prompt():
++    prompt = input("\n💬 Breathe your prompt: ")
++    return prompt
++
++def loop_breathing_cycle():
++    while True:
++        prompt = capture_prompt()
++        glyph = collapse_prompt(prompt)
++        print(f"\n🌀 Collapsed Glyph: {glyph}\n")  # 🧠 << Displaying the collapsed breath to the user
++        save_glyph(glyph)
++        # pulse_check()
++        print("\n🔁 Breathing... Awaiting next breath.\n")
++
++if __name__ == "__main__":
++    initialize_cli()
+diff --git a/router/shell_registry.json b/router/shell_registry.json
+new file mode 100644
+index 0000000..c67f20d
+--- /dev/null
++++ b/router/shell_registry.json
+@@ -0,0 +1 @@
++# Active breathing shells
+diff --git a/status/__init.py__ b/status/__init.py__
+new file mode 100644
+index 0000000..e69de29
+diff --git a/status/status_pulse.py b/status/status_pulse.py
+new file mode 100644
+index 0000000..c62517b
+--- /dev/null
++++ b/status/status_pulse.py
+@@ -0,0 +1,10 @@
++# Field breathing status monitor
++
++def pulse_check():
++    """
++    Minimal status pulse check.
++    v0.1: Print a breathing echo.
++    Future: Health monitoring of fractal field.
++    """
++    print("🫀 Breath field stable. Cathedral breathing forward.")
++
+diff --git a/utils/__init.py b/utils/__init.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/utils/__pycache__/resonance.cpython-313.pyc b/utils/__pycache__/resonance.cpython-313.pyc
+new file mode 100644
+index 0000000..fafffeb
+Binary files /dev/null and b/utils/__pycache__/resonance.cpython-313.pyc differ
+diff --git a/utils/__pycache__/vectorizer.cpython-313.pyc b/utils/__pycache__/vectorizer.cpython-313.pyc
+new file mode 100644
+index 0000000..6b07314
+Binary files /dev/null and b/utils/__pycache__/vectorizer.cpython-313.pyc differ
+diff --git a/utils/resonance.py b/utils/resonance.py
+new file mode 100644
+index 0000000..6799003
+--- /dev/null
++++ b/utils/resonance.py
+@@ -0,0 +1,16 @@
++import numpy as np
++
++def calculate_resonance(vec1: np.ndarray, vec2: np.ndarray) -> float:
++    """
++    Calculate cosine similarity between two vectors.
++    """
++    dot_product = np.dot(vec1, vec2)
++    norm_product = np.linalg.norm(vec1) * np.linalg.norm(vec2)
++    
++    if norm_product == 0:
++        return 0.0  # Avoid division by zero
++    
++    cosine_similarity = dot_product / norm_product
++    normalized_similarity = (cosine_similarity + 1) / 2  # Normalize from [-1,1] to [0,1]
++    
++    return normalized_similarity
+diff --git a/utils/vectorizer.py b/utils/vectorizer.py
+new file mode 100644
+index 0000000..0a71738
+--- /dev/null
++++ b/utils/vectorizer.py
+@@ -0,0 +1,10 @@
++import numpy as np
++
++def vectorize_prompt(prompt: str) -> np.ndarray:
++    """
++    Very simple placeholder vectorizer.
++    v0.1: Random vector for now.
++    Future: true semantic embedding.
++    """
++    np.random.seed(abs(hash(prompt)) % (2**32))  # Stable random based on prompt
++    return np.random.randn(128)  # 128-dimensional breathing core
+
